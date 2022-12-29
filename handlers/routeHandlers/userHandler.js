@@ -2,6 +2,7 @@
 const data = require('../../lib/data');
 const { hash } = require('../../helpers/utilities');
 const { parseJSON } = require('../../helpers/utilities');
+const tokenHandler = require('./tokenHandler');
 
 // modul;e scaffolding
 
@@ -86,28 +87,44 @@ handler._users.post = (requestProperties, callback) => {
 };
 
 handler._users.get = (requestProperties, callback) => {
-    // check phone number if valid
+    // check the phone number if valid
     const phone =
         typeof requestProperties.queryStringObject.phone === 'string' &&
         requestProperties.queryStringObject.phone.trim().length === 11
             ? requestProperties.queryStringObject.phone
             : false;
-    if  (phone) {
-        // search for the user
-        data.read('user', phone, (err, u) => {
+    if (phone) {
+        // //verify user
+        // let token = typeof(requestProperties.headersObject.token) === 'string' ?
+        // requestProperties.headersObject.token : false;
+        
+        // tokenHandler._token.verify(token, phone, (tokenId) => {
+        //     if(tokenId) {
+        //         //verify ended ^
+                  // lookup the user
+        data.read('users', phone, (err, u) => {
             const user = { ...parseJSON(u) };
-            if  (!err && user) {
+            if (!err && user) {
                 delete user.password;
                 callback(200, user);
             } else {
-                callback(403,  {
-                    error: 'Not Found! Try Again.',
+                callback(404, {
+                    error: 'Requested user was not found!',
                 });
             }
         });
-    }  else {
-        callback(404,  {
-            error: 'Not Found! Try Again.',
+        /// lookup ended ^
+        //     }else {
+        //         callback(403, {
+        //             error: 'authentication failed',
+        //         });
+        //     }
+        // });
+
+
+    } else {
+        callback(404, {
+            error: 'Requested user was not found!',
         });
     }
 };
